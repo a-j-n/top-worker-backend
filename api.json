@@ -1,0 +1,1321 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Laravel API Docs",
+        "version": "1.0.0",
+        "description": "Public and admin API documentation for categories and top people."
+    },
+    "servers": [
+        {
+            "url": "http://topboardlist.test/api"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Public Top People",
+            "description": "Browse approved top people and submit new candidates for admin review."
+        },
+        {
+            "name": "Admin Authentication",
+            "description": "Authenticate with email and password to get a Sanctum Bearer token, then send that token to protected /api/admin endpoints."
+        }
+    ],
+    "paths": {
+        "/admin/login": {
+            "post": {
+                "operationId": "admin.login",
+                "description": "Submit admin credentials to receive a Sanctum token. Use the returned token as `Authorization: Bearer {token}` for protected admin endpoints.",
+                "summary": "Login to admin API",
+                "tags": [
+                    "Admin Authentication"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/components/schemas/AdminLoginRequest"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "email": {
+                                                "type": "string",
+                                                "format": "email",
+                                                "description": "Admin account email address.",
+                                                "example": "e.a.gamal@gmail"
+                                            },
+                                            "password": {
+                                                "type": "string",
+                                                "description": "Admin account password.",
+                                                "example": "123456"
+                                            },
+                                            "device_name": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ],
+                                                "description": "Optional device label for the issued token.",
+                                                "example": "Postman",
+                                                "maxLength": 255
+                                            }
+                                        },
+                                        "required": [
+                                            "email",
+                                            "password"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful. Returns the Sanctum Bearer token and the authenticated user.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "examples": [
+                                        {
+                                            "token": "1|sanctum-example-token",
+                                            "token_type": "Bearer",
+                                            "user": {
+                                                "id": 1,
+                                                "name": "E. A. Gamal",
+                                                "email": "e.a.gamal@gmail"
+                                            }
+                                        }
+                                    ],
+                                    "properties": {
+                                        "token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "const": "Bearer"
+                                        },
+                                        "user": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "email"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "token",
+                                        "token_type",
+                                        "user"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/admin/me": {
+            "get": {
+                "operationId": "admin.me",
+                "description": "Returns the currently authenticated admin user. Requires a valid Sanctum Bearer token.",
+                "summary": "Get current admin user",
+                "tags": [
+                    "Admin Authentication"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Authenticated admin user.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "examples": [
+                                        {
+                                            "data": {
+                                                "id": 1,
+                                                "name": "E. A. Gamal",
+                                                "email": "e.a.gamal@gmail"
+                                            }
+                                        }
+                                    ],
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "email"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/logout": {
+            "post": {
+                "operationId": "admin.logout",
+                "description": "Revokes the currently used Sanctum token. Requires a valid Sanctum Bearer token.",
+                "summary": "Logout from admin API",
+                "tags": [
+                    "Admin Authentication"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Token revoked successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "examples": [
+                                        {
+                                            "message": "Logged out successfully."
+                                        }
+                                    ],
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Logged out successfully."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/top-people": {
+            "get": {
+                "operationId": "top-people.index",
+                "description": "Returns only approved top people together with their category. Supports pagination, category filtering, and name search.",
+                "summary": "List approved top people",
+                "tags": [
+                    "Public Top People"
+                ],
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "Filter approved top people by category ID.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search approved top people by name.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "Ahmed"
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "How many approved top people to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 15
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "The paginated page number.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated set of `TopPersonResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TopPersonResource"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "last": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
+                                            ]
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
+                                                "path": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "Base path for paginator generated URLs."
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "description": "Number of items shown per page.",
+                                                    "minimum": 0
+                                                },
+                                                "to": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
+                                                "path",
+                                                "per_page",
+                                                "to",
+                                                "total"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "links",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "top-people.store",
+                "description": "Creates a new top person submission. Public submissions are always saved with `is_approved` set to `false` until an admin approves them.",
+                "summary": "Submit a top person",
+                "tags": [
+                    "Public Top People"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/components/schemas/StorePublicTopPersonRequest"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "Top person name.",
+                                                "example": "Ahmed Gamal",
+                                                "maxLength": 255
+                                            },
+                                            "phone": {
+                                                "type": "string",
+                                                "description": "Top person phone number.",
+                                                "example": "+201001234567",
+                                                "maxLength": 255
+                                            },
+                                            "category_id": {
+                                                "type": "integer",
+                                                "description": "Category ID for the submitted top person.",
+                                                "example": 1
+                                            },
+                                            "avatar": {
+                                                "type": "string",
+                                                "format": "binary",
+                                                "description": "Optional avatar image file."
+                                            }
+                                        },
+                                        "required": [
+                                            "name",
+                                            "phone",
+                                            "category_id"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Submission created successfully and is pending admin approval.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "examples": [
+                                        {
+                                            "message": "Top person submitted successfully and is pending admin approval.",
+                                            "data": {
+                                                "id": 1,
+                                                "name": "Ahmed Gamal",
+                                                "phone": "+201001234567",
+                                                "avatar": "top-people/example-avatar.jpg",
+                                                "avatar_url": "https://haader.fra1.cdn.digitaloceanspaces.com/toplist/top-people/example-avatar.jpg",
+                                                "category_id": 1,
+                                                "is_approved": false,
+                                                "category": {
+                                                    "id": 1,
+                                                    "name": "Actors",
+                                                    "name_ar": "\u0645\u0645\u062b\u0644\u0648\u0646",
+                                                    "created_at": "2026-03-13T00:00:00.000000Z",
+                                                    "updated_at": "2026-03-13T00:00:00.000000Z"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TopPersonResource"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Top person submitted successfully and is pending admin approval."
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/admin/categories": {
+            "get": {
+                "operationId": "admin.categories.index",
+                "summary": "List all categories for admin management",
+                "tags": [
+                    "Category"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CategoryResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CategoryResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "operationId": "admin.categories.store",
+                "summary": "Create a new category",
+                "tags": [
+                    "Category"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreCategoryRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "`CategoryResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/CategoryResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/categories/{category}": {
+            "get": {
+                "operationId": "admin.categories.show",
+                "summary": "Show a single category",
+                "tags": [
+                    "Category"
+                ],
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "required": true,
+                        "description": "The category ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`CategoryResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/CategoryResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "operationId": "admin.categories.update",
+                "summary": "Update an existing category",
+                "tags": [
+                    "Category"
+                ],
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "required": true,
+                        "description": "The category ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateCategoryRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`CategoryResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/CategoryResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "operationId": "admin.categories.destroy",
+                "summary": "Delete a category",
+                "tags": [
+                    "Category"
+                ],
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "required": true,
+                        "description": "The category ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/top-people": {
+            "get": {
+                "operationId": "admin.top-people.index",
+                "summary": "List all top people for admin management",
+                "tags": [
+                    "TopPerson"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `TopPersonResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TopPersonResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "operationId": "admin.top-people.store",
+                "summary": "Create a new top person",
+                "tags": [
+                    "TopPerson"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreTopPersonRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "`TopPersonResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TopPersonResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/top-people/{topPerson}": {
+            "get": {
+                "operationId": "admin.top-people.show",
+                "summary": "Show a single top person",
+                "tags": [
+                    "TopPerson"
+                ],
+                "parameters": [
+                    {
+                        "name": "topPerson",
+                        "in": "path",
+                        "required": true,
+                        "description": "The top person ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`TopPersonResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TopPersonResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "operationId": "admin.top-people.update",
+                "summary": "Update an existing top person",
+                "tags": [
+                    "TopPerson"
+                ],
+                "parameters": [
+                    {
+                        "name": "topPerson",
+                        "in": "path",
+                        "required": true,
+                        "description": "The top person ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateTopPersonRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`TopPersonResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TopPersonResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "operationId": "admin.top-people.destroy",
+                "summary": "Delete a top person",
+                "tags": [
+                    "TopPerson"
+                ],
+                "parameters": [
+                    {
+                        "name": "topPerson",
+                        "in": "path",
+                        "required": true,
+                        "description": "The top person ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctumBearerAuth": {
+                "type": "http",
+                "description": "Use the Sanctum token returned by POST /api/admin/login as Authorization: Bearer {token}.",
+                "scheme": "bearer",
+                "bearerFormat": "Bearer"
+            }
+        },
+        "schemas": {
+            "AdminLoginRequest": {
+                "type": "object",
+                "title": "AdminLoginRequest"
+            },
+            "CategoryResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "name_ar": {
+                        "type": "string"
+                    },
+                    "slug": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "icon": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "icon_url": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "name_ar",
+                    "slug",
+                    "icon",
+                    "icon_url",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "CategoryResource"
+            },
+            "StoreCategoryRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "name_ar": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "slug": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 255
+                    },
+                    "icon": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "binary",
+                        "contentMediaType": "application/octet-stream"
+                    }
+                },
+                "required": [
+                    "name",
+                    "name_ar"
+                ],
+                "title": "StoreCategoryRequest"
+            },
+            "StorePublicTopPersonRequest": {
+                "type": "object",
+                "title": "StorePublicTopPersonRequest"
+            },
+            "StoreTopPersonRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "avatar": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "binary",
+                        "contentMediaType": "application/octet-stream"
+                    },
+                    "category_id": {
+                        "type": "integer"
+                    },
+                    "is_approved": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "phone",
+                    "category_id",
+                    "is_approved"
+                ],
+                "title": "StoreTopPersonRequest"
+            },
+            "TopPersonResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string"
+                    },
+                    "avatar": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "avatar_url": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "category_id": {
+                        "type": "integer"
+                    },
+                    "is_approved": {
+                        "type": "boolean"
+                    },
+                    "category": {
+                        "$ref": "#/components/schemas/CategoryResource"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "phone",
+                    "avatar",
+                    "avatar_url",
+                    "category_id",
+                    "is_approved",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "TopPersonResource"
+            },
+            "UpdateCategoryRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "name_ar": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "slug": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 255
+                    },
+                    "icon": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "binary",
+                        "contentMediaType": "application/octet-stream"
+                    }
+                },
+                "title": "UpdateCategoryRequest"
+            },
+            "UpdateTopPersonRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "avatar": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "binary",
+                        "contentMediaType": "application/octet-stream"
+                    },
+                    "category_id": {
+                        "type": "integer"
+                    },
+                    "is_approved": {
+                        "type": "boolean"
+                    }
+                },
+                "title": "UpdateTopPersonRequest"
+            }
+        },
+        "responses": {
+            "ValidationException": {
+                "description": "Validation error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Errors overview."
+                                },
+                                "errors": {
+                                    "type": "object",
+                                    "description": "A detailed description of each field that failed validation.",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "required": [
+                                "message",
+                                "errors"
+                            ]
+                        }
+                    }
+                }
+            },
+            "AuthenticationException": {
+                "description": "Unauthenticated",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ]
+                        }
+                    }
+                }
+            },
+            "ModelNotFoundException": {
+                "description": "Not found",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
