@@ -7,6 +7,7 @@ use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityRequirement;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Telescope\TelescopeServiceProvider as BaseTelescopeServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,7 +16,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        if ($this->app->environment('local') && class_exists(BaseTelescopeServiceProvider::class)) {
+            $this->app->register(BaseTelescopeServiceProvider::class);
+            $this->app->register(TelescopeServiceProvider::class);
+        }
     }
 
     /**
