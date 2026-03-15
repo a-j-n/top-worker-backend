@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\TopPersonFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TopPerson extends Model
 {
-    /** @use HasFactory<\Database\Factories\TopPersonFactory> */
+    /** @use HasFactory<TopPersonFactory> */
     use HasFactory;
 
     /**
@@ -19,6 +20,7 @@ class TopPerson extends Model
     protected $fillable = [
         'name',
         'phone',
+        'bio',
         'avatar',
         'category_id',
         'is_approved',

@@ -61,6 +61,7 @@ class PublicTopPersonController extends Controller
     )]
     #[BodyParameter('name', 'Top person name.', example: 'Ahmed Gamal')]
     #[BodyParameter('phone', 'Top person phone number.', example: '+201001234567')]
+    #[BodyParameter('bio', 'Optional short biography or service summary for the submitted top person.', required: false, example: 'Experienced plumbing technician specializing in residential maintenance and emergency repairs.')]
     #[BodyParameter('category_id', 'Category ID for the submitted top person.', example: 1)]
     #[BodyParameter('avatar', 'Optional avatar image file.', required: false, type: 'string', format: 'binary')]
     #[ApiResponse(
@@ -72,14 +73,15 @@ class PublicTopPersonController extends Controller
                 'id' => 1,
                 'name' => 'Ahmed Gamal',
                 'phone' => '+201001234567',
+                'bio' => 'Experienced plumbing technician specializing in residential maintenance and emergency repairs.',
                 'avatar' => 'top-people/example-avatar.jpg',
                 'avatar_url' => 'https://haader.fra1.cdn.digitaloceanspaces.com/toplist/top-people/example-avatar.jpg',
                 'category_id' => 1,
                 'is_approved' => false,
                 'category' => [
                     'id' => 1,
-                    'name' => 'Actors',
-                    'name_ar' => 'ممثلون',
+                    'name' => 'Plumbing',
+                    'name_ar' => 'سباكة',
                     'created_at' => '2026-03-13T00:00:00.000000Z',
                     'updated_at' => '2026-03-13T00:00:00.000000Z',
                 ],

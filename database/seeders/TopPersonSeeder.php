@@ -16,7 +16,9 @@ class TopPersonSeeder extends Seeder
         $categories = Category::query()->get();
 
         if ($categories->isEmpty()) {
-            $categories = Category::factory(5)->create();
+            $this->call(CategorySeeder::class);
+
+            $categories = Category::query()->get();
         }
 
         TopPerson::factory(100)

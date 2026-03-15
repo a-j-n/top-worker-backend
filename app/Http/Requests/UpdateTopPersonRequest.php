@@ -27,6 +27,7 @@ class UpdateTopPersonRequest extends FormRequest
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'phone' => ['sometimes', 'required', 'string', 'max:255'],
+            'bio' => ['sometimes', 'nullable', 'string'],
             'avatar' => ['sometimes', 'nullable', File::types(['jpg', 'jpeg', 'png', 'webp'])->max('5mb')],
             'category_id' => ['sometimes', 'required', 'integer', Rule::exists('categories', 'id')],
             'is_approved' => ['sometimes', 'required', 'boolean'],
@@ -47,6 +48,7 @@ class UpdateTopPersonRequest extends FormRequest
             'phone.required' => 'The phone number is required.',
             'phone.string' => 'The phone number must be a string.',
             'phone.max' => 'The phone number may not be greater than 255 characters.',
+            'bio.string' => 'The bio must be a string.',
             'category_id.required' => 'The category is required.',
             'category_id.integer' => 'The category must be a valid identifier.',
             'category_id.exists' => 'The selected category does not exist.',

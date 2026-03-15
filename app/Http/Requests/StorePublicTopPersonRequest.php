@@ -27,6 +27,7 @@ class StorePublicTopPersonRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:255'],
+            'bio' => ['nullable', 'string'],
             'avatar' => ['nullable', File::types(['jpg', 'jpeg', 'png', 'webp'])->max('5mb')],
             'category_id' => ['required', 'integer', Rule::exists('categories', 'id')],
         ];
@@ -46,6 +47,7 @@ class StorePublicTopPersonRequest extends FormRequest
             'phone.required' => 'The phone number is required.',
             'phone.string' => 'The phone number must be a string.',
             'phone.max' => 'The phone number may not be greater than 255 characters.',
+            'bio.string' => 'The bio must be a string.',
             'category_id.required' => 'The category is required.',
             'category_id.integer' => 'The category must be a valid identifier.',
             'category_id.exists' => 'The selected category does not exist.',

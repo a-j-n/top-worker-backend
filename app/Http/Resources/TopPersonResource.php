@@ -19,6 +19,7 @@ class TopPersonResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'phone' => $this->phone,
+            'bio' => $this->bio,
             'avatar' => $this->avatar,
             'avatar_url' => $this->avatar !== null ? Storage::url($this->avatar) : null,
             'category_id' => $this->category_id,

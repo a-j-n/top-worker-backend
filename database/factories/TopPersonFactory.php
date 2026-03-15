@@ -21,6 +21,7 @@ class TopPersonFactory extends Factory
         return [
             'name' => fake()->name(),
             'phone' => fake()->unique()->numerify('+201#########'),
+            'bio' => fake()->optional()->sentence(18),
             'avatar' => null,
             'category_id' => Category::factory(),
             'is_approved' => fake()->boolean(),
