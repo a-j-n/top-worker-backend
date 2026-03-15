@@ -460,6 +460,14 @@
                                                 "example": "+201001234567",
                                                 "maxLength": 255
                                             },
+                                            "bio": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ],
+                                                "description": "Optional short biography or service summary for the submitted top person.",
+                                                "example": "Experienced plumbing technician specializing in residential maintenance and emergency repairs."
+                                            },
                                             "category_id": {
                                                 "type": "integer",
                                                 "description": "Category ID for the submitted top person.",
@@ -496,14 +504,15 @@
                                                 "id": 1,
                                                 "name": "Ahmed Gamal",
                                                 "phone": "+201001234567",
+                                                "bio": "Experienced plumbing technician specializing in residential maintenance and emergency repairs.",
                                                 "avatar": "top-people/example-avatar.jpg",
                                                 "avatar_url": "https://haader.fra1.cdn.digitaloceanspaces.com/toplist/top-people/example-avatar.jpg",
                                                 "category_id": 1,
                                                 "is_approved": false,
                                                 "category": {
                                                     "id": 1,
-                                                    "name": "Actors",
-                                                    "name_ar": "\u0645\u0645\u062b\u0644\u0648\u0646",
+                                                    "name": "Plumbing",
+                                                    "name_ar": "\u0633\u0628\u0627\u0643\u0629",
                                                     "created_at": "2026-03-13T00:00:00.000000Z",
                                                     "updated_at": "2026-03-13T00:00:00.000000Z"
                                                 }
@@ -752,6 +761,97 @@
                 "responses": {
                     "204": {
                         "description": "No content"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/top-people/pending": {
+            "get": {
+                "operationId": "admin.top-people.pending",
+                "summary": "List only pending top people for admin approval",
+                "tags": [
+                    "TopPerson"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `TopPersonResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TopPersonResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/top-people/{topPerson}/approve": {
+            "patch": {
+                "operationId": "admin.top-people.approve",
+                "summary": "Approve a pending top person",
+                "tags": [
+                    "TopPerson"
+                ],
+                "parameters": [
+                    {
+                        "name": "topPerson",
+                        "in": "path",
+                        "required": true,
+                        "description": "The top person ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`TopPersonResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TopPersonResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
@@ -1113,6 +1213,12 @@
                         "type": "string",
                         "maxLength": 255
                     },
+                    "bio": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
                     "avatar": {
                         "type": [
                             "string",
@@ -1148,6 +1254,12 @@
                     "phone": {
                         "type": "string"
                     },
+                    "bio": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
                     "avatar": {
                         "type": [
                             "string",
@@ -1180,6 +1292,7 @@
                     "id",
                     "name",
                     "phone",
+                    "bio",
                     "avatar",
                     "avatar_url",
                     "category_id",
@@ -1228,6 +1341,12 @@
                     "phone": {
                         "type": "string",
                         "maxLength": 255
+                    },
+                    "bio": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "avatar": {
                         "type": [

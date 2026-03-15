@@ -28,6 +28,20 @@ class TopPersonController extends Controller
     }
 
     /**
+     * List only pending top people for admin approval.
+     */
+    public function pending(): AnonymousResourceCollection
+    {
+        return TopPersonResource::collection(
+            TopPerson::query()
+                ->with('category')
+                ->where('is_approved', false)
+                ->latest()
+                ->get()
+        );
+    }
+
+    /**
      * Create a new top person.
      */
     public function store(StoreTopPersonRequest $request): JsonResponse
@@ -51,6 +65,18 @@ class TopPersonController extends Controller
     public function show(TopPerson $topPerson): TopPersonResource
     {
         return TopPersonResource::make($topPerson->load('category'));
+    }
+
+    /**
+     * Approve a pending top person.
+     */
+    public function approve(TopPerson $topPerson): TopPersonResource
+    {
+        $topPerson->update([
+            'is_approved' => true,
+        ]);
+
+        return TopPersonResource::make($topPerson->refresh()->load('category'));
     }
 
     /**
