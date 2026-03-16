@@ -13,7 +13,7 @@ Route::post('top-people', [PublicTopPersonController::class, 'store'])->name('to
 Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::post('login', [AuthController::class, 'login'])->name('login');
 
-    Route::middleware('auth:sanctum')->group(function (): void {
+    Route::middleware(['auth:sanctum', 'can:access-admin-api'])->group(function (): void {
         Route::get('me', [AuthController::class, 'me'])->name('me');
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 

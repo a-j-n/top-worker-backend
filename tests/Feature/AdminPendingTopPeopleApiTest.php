@@ -8,7 +8,7 @@ use Laravel\Sanctum\Sanctum;
 uses(RefreshDatabase::class);
 
 it('lists only pending top people for admins', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $pendingTopPeople = TopPerson::factory()->count(2)->create([
         'is_approved' => false,
     ]);
@@ -27,7 +27,7 @@ it('lists only pending top people for admins', function () {
 });
 
 it('approves a pending top person through the admin api', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $topPerson = TopPerson::factory()->create([
         'is_approved' => false,
     ]);
@@ -45,7 +45,7 @@ it('approves a pending top person through the admin api', function () {
 });
 
 it('deletes a pending top person through the existing admin delete api', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $topPerson = TopPerson::factory()->create([
         'is_approved' => false,
     ]);

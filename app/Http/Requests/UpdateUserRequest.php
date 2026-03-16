@@ -34,6 +34,7 @@ class UpdateUserRequest extends FormRequest
                 Rule::unique('users', 'email')->ignoreModel($this->route('user')),
             ],
             'password' => ['sometimes', 'required', 'string', 'min:8'],
+            'is_admin' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -56,6 +57,7 @@ class UpdateUserRequest extends FormRequest
             'password.required' => 'The password is required.',
             'password.string' => 'The password must be a string.',
             'password.min' => 'The password must be at least 8 characters.',
+            'is_admin.boolean' => 'The admin flag must be true or false.',
         ];
     }
 }

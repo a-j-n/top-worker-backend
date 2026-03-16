@@ -38,6 +38,7 @@ class UserController extends Controller
                     'id' => 1,
                     'name' => 'E. A. Gamal',
                     'email' => 'e.a.gamal@gmail.com',
+                    'is_admin' => true,
                     'email_verified_at' => '2026-03-13T00:00:00.000000Z',
                     'created_at' => '2026-03-13T00:00:00.000000Z',
                     'updated_at' => '2026-03-13T00:00:00.000000Z',
@@ -46,6 +47,7 @@ class UserController extends Controller
                     'id' => 2,
                     'name' => 'Admin Assistant',
                     'email' => 'assistant@example.com',
+                    'is_admin' => false,
                     'email_verified_at' => null,
                     'created_at' => '2026-03-14T00:00:00.000000Z',
                     'updated_at' => '2026-03-14T00:00:00.000000Z',
@@ -73,6 +75,7 @@ class UserController extends Controller
     #[BodyParameter('name', 'User display name.', example: 'New Admin User')]
     #[BodyParameter('email', 'User email address. Must be unique.', example: 'new-admin@example.com')]
     #[BodyParameter('password', 'Plain-text password for the new user. It will be hashed before storage.', example: 'password123')]
+    #[BodyParameter('is_admin', 'Whether the user can access admin API endpoints.', required: false, type: 'boolean', example: true)]
     #[ApiResponse(
         201,
         description: 'User created successfully.',
@@ -81,6 +84,7 @@ class UserController extends Controller
                 'id' => 3,
                 'name' => 'New Admin User',
                 'email' => 'new-admin@example.com',
+                'is_admin' => true,
                 'email_verified_at' => null,
                 'created_at' => '2026-03-16T00:00:00.000000Z',
                 'updated_at' => '2026-03-16T00:00:00.000000Z',
@@ -112,6 +116,7 @@ class UserController extends Controller
                 'id' => 1,
                 'name' => 'E. A. Gamal',
                 'email' => 'e.a.gamal@gmail.com',
+                'is_admin' => true,
                 'email_verified_at' => '2026-03-13T00:00:00.000000Z',
                 'created_at' => '2026-03-13T00:00:00.000000Z',
                 'updated_at' => '2026-03-13T00:00:00.000000Z',
@@ -134,6 +139,7 @@ class UserController extends Controller
     #[BodyParameter('name', 'Updated user display name.', required: false, example: 'Updated Admin User')]
     #[BodyParameter('email', 'Updated unique email address.', required: false, example: 'updated-admin@example.com')]
     #[BodyParameter('password', 'Updated plain-text password. It will be hashed before storage.', required: false, example: 'new-password123')]
+    #[BodyParameter('is_admin', 'Whether the user can access admin API endpoints.', required: false, type: 'boolean', example: false)]
     #[ApiResponse(
         200,
         description: 'User updated successfully.',
@@ -142,6 +148,7 @@ class UserController extends Controller
                 'id' => 1,
                 'name' => 'Updated Admin User',
                 'email' => 'updated-admin@example.com',
+                'is_admin' => false,
                 'email_verified_at' => '2026-03-13T00:00:00.000000Z',
                 'created_at' => '2026-03-13T00:00:00.000000Z',
                 'updated_at' => '2026-03-16T00:00:00.000000Z',

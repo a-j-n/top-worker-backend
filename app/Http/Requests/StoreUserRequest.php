@@ -27,6 +27,7 @@ class StoreUserRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')],
             'password' => ['required', 'string', 'min:8'],
+            'is_admin' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -49,6 +50,7 @@ class StoreUserRequest extends FormRequest
             'password.required' => 'The password is required.',
             'password.string' => 'The password must be a string.',
             'password.min' => 'The password must be at least 8 characters.',
+            'is_admin.boolean' => 'The admin flag must be true or false.',
         ];
     }
 }

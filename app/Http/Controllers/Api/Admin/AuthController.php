@@ -17,7 +17,7 @@ use Illuminate\Validation\ValidationException;
 
 #[Group(
     'Admin Authentication',
-    'Authenticate with email and password to get a Sanctum Bearer token, then send that token to protected /api/admin endpoints.'
+    'Authenticate admin accounts with email and password to get a Sanctum Bearer token, then send that token to protected /api/admin endpoints.'
 )]
 class AuthController extends Controller
 {
@@ -26,7 +26,7 @@ class AuthController extends Controller
      */
     #[Endpoint(
         title: 'Login to admin API',
-        description: 'Submit admin credentials to receive a Sanctum token. Use the returned token as `Authorization: Bearer {token}` for protected admin endpoints.'
+        description: 'Submit admin account credentials to receive a Sanctum token. Use the returned token as `Authorization: Bearer {token}` for protected admin endpoints.'
     )]
     #[BodyParameter('email', 'Admin account email address.', example: 'e.a.gamal@gmail')]
     #[BodyParameter('password', 'Admin account password.', example: '123456')]
@@ -41,6 +41,7 @@ class AuthController extends Controller
                 'id' => 1,
                 'name' => 'E. A. Gamal',
                 'email' => 'e.a.gamal@gmail',
+                'is_admin' => true,
             ],
         ]]
     )]
@@ -48,7 +49,7 @@ class AuthController extends Controller
     {
         $user = User::query()->where('email', $request->string('email')->toString())->first();
 
-        if (! $user || ! Hash::check($request->string('password')->toString(), $user->password)) {
+        if (! $user || ! $user->isAdmin() || ! Hash::check($request->string('password')->toString(), $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
@@ -67,6 +68,7 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'is_admin' => $user->is_admin,
             ],
         ]);
     }
@@ -83,6 +85,7 @@ class AuthController extends Controller
                 'id' => 1,
                 'name' => 'E. A. Gamal',
                 'email' => 'e.a.gamal@gmail',
+                'is_admin' => true,
             ],
         ]]
     )]
@@ -95,6 +98,7 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'is_admin' => $user->is_admin,
             ],
         ]);
     }

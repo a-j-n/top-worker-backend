@@ -9,7 +9,7 @@ use Laravel\Sanctum\Sanctum;
 uses(RefreshDatabase::class);
 
 it('persists and returns bio through the admin top people api', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
     $category = Category::factory()->create();
 
     Sanctum::actingAs($user);

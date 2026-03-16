@@ -8,7 +8,7 @@ use Laravel\Sanctum\Sanctum;
 uses(RefreshDatabase::class);
 
 it('lists users for admins', function () {
-    $admin = User::factory()->create([
+    $admin = User::factory()->admin()->create([
         'name' => 'Admin User',
         'email' => 'admin@example.com',
     ]);
@@ -36,7 +36,7 @@ it('lists users for admins', function () {
 });
 
 it('creates users through the admin api', function () {
-    $admin = User::factory()->create();
+    $admin = User::factory()->admin()->create();
 
     Sanctum::actingAs($admin);
 
@@ -44,21 +44,24 @@ it('creates users through the admin api', function () {
         'name' => 'New User',
         'email' => 'new-user@example.com',
         'password' => 'password123',
+        'is_admin' => true,
     ]);
 
     $response
         ->assertCreated()
         ->assertJsonPath('data.name', 'New User')
-        ->assertJsonPath('data.email', 'new-user@example.com');
+        ->assertJsonPath('data.email', 'new-user@example.com')
+        ->assertJsonPath('data.is_admin', true);
 
     $user = User::query()->where('email', 'new-user@example.com')->firstOrFail();
 
     expect(Hash::check('password123', $user->password))->toBeTrue();
+    expect($user->is_admin)->toBeTrue();
     expect($response->json('data'))->not->toHaveKey('password');
 });
 
 it('shows a single user through the admin api', function () {
-    $admin = User::factory()->create();
+    $admin = User::factory()->admin()->create();
     $user = User::factory()->create([
         'name' => 'Shown User',
         'email' => 'shown@example.com',
@@ -73,7 +76,7 @@ it('shows a single user through the admin api', function () {
 });
 
 it('updates users through the admin api', function () {
-    $admin = User::factory()->create();
+    $admin = User::factory()->admin()->create();
     $user = User::factory()->create([
         'name' => 'Original User',
         'email' => 'original@example.com',
@@ -86,22 +89,25 @@ it('updates users through the admin api', function () {
         'name' => 'Updated User',
         'email' => 'updated@example.com',
         'password' => 'new-password123',
+        'is_admin' => true,
     ]);
 
     $response
         ->assertSuccessful()
         ->assertJsonPath('data.name', 'Updated User')
-        ->assertJsonPath('data.email', 'updated@example.com');
+        ->assertJsonPath('data.email', 'updated@example.com')
+        ->assertJsonPath('data.is_admin', true);
 
     $user->refresh();
 
     expect($user->name)->toBe('Updated User');
     expect($user->email)->toBe('updated@example.com');
+    expect($user->is_admin)->toBeTrue();
     expect(Hash::check('new-password123', $user->password))->toBeTrue();
 });
 
 it('deletes users through the admin api', function () {
-    $admin = User::factory()->create();
+    $admin = User::factory()->admin()->create();
     $user = User::factory()->create();
 
     Sanctum::actingAs($admin);

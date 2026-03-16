@@ -17,7 +17,11 @@
         },
         {
             "name": "Admin Authentication",
-            "description": "Authenticate with email and password to get a Sanctum Bearer token, then send that token to protected /api/admin endpoints."
+            "description": "Authenticate admin accounts with email and password to get a Sanctum Bearer token, then send that token to protected /api/admin endpoints."
+        },
+        {
+            "name": "Admin Top People",
+            "description": "Manage approved entries and pending top people submissions from the admin API."
         },
         {
             "name": "Admin Users",
@@ -28,7 +32,7 @@
         "/admin/login": {
             "post": {
                 "operationId": "admin.login",
-                "description": "Submit admin credentials to receive a Sanctum token. Use the returned token as `Authorization: Bearer {token}` for protected admin endpoints.",
+                "description": "Submit admin account credentials to receive a Sanctum token. Use the returned token as `Authorization: Bearer {token}` for protected admin endpoints.",
                 "summary": "Login to admin API",
                 "tags": [
                     "Admin Authentication"
@@ -89,7 +93,8 @@
                                             "user": {
                                                 "id": 1,
                                                 "name": "E. A. Gamal",
-                                                "email": "e.a.gamal@gmail"
+                                                "email": "e.a.gamal@gmail",
+                                                "is_admin": true
                                             }
                                         }
                                     ],
@@ -112,12 +117,16 @@
                                                 },
                                                 "email": {
                                                     "type": "string"
+                                                },
+                                                "is_admin": {
+                                                    "type": "string"
                                                 }
                                             },
                                             "required": [
                                                 "id",
                                                 "name",
-                                                "email"
+                                                "email",
+                                                "is_admin"
                                             ]
                                         }
                                     },
@@ -156,7 +165,8 @@
                                             "data": {
                                                 "id": 1,
                                                 "name": "E. A. Gamal",
-                                                "email": "e.a.gamal@gmail"
+                                                "email": "e.a.gamal@gmail",
+                                                "is_admin": true
                                             }
                                         }
                                     ],
@@ -172,12 +182,16 @@
                                                 },
                                                 "email": {
                                                     "type": "string"
+                                                },
+                                                "is_admin": {
+                                                    "type": "boolean"
                                                 }
                                             },
                                             "required": [
                                                 "id",
                                                 "name",
-                                                "email"
+                                                "email",
+                                                "is_admin"
                                             ]
                                         }
                                     },
@@ -187,6 +201,9 @@
                                 }
                             }
                         }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -232,6 +249,409 @@
                             }
                         }
                     },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/top-people/pending": {
+            "get": {
+                "operationId": "admin.top-people.pending",
+                "description": "Returns only top people that are still waiting for admin approval.",
+                "summary": "List pending top people",
+                "tags": [
+                    "Admin Top People"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pending top people retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "examples": [
+                                        {
+                                            "data": [
+                                                {
+                                                    "id": 12,
+                                                    "name": "Ahmed Gamal",
+                                                    "phone": "+201001234567",
+                                                    "bio": "Experienced plumbing technician specializing in residential maintenance.",
+                                                    "avatar": "top-people/ahmed-gamal.jpg",
+                                                    "avatar_url": "https://haader.fra1.cdn.digitaloceanspaces.com/toplist/top-people/ahmed-gamal.jpg",
+                                                    "category_id": 1,
+                                                    "is_approved": false,
+                                                    "category": {
+                                                        "id": 1,
+                                                        "name": "Plumbing",
+                                                        "name_ar": "\u0633\u0628\u0627\u0643\u0629",
+                                                        "created_at": "2026-03-13T00:00:00.000000Z",
+                                                        "updated_at": "2026-03-13T00:00:00.000000Z"
+                                                    },
+                                                    "created_at": "2026-03-16T00:00:00.000000Z",
+                                                    "updated_at": "2026-03-16T00:00:00.000000Z"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TopPersonResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/top-people/{topPerson}/approve": {
+            "patch": {
+                "operationId": "admin.top-people.approve",
+                "description": "Marks a pending top person as approved so it becomes visible in the public API.",
+                "summary": "Approve pending top person",
+                "tags": [
+                    "Admin Top People"
+                ],
+                "parameters": [
+                    {
+                        "name": "topPerson",
+                        "in": "path",
+                        "required": true,
+                        "description": "The top person ID.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 12
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Top person approved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "examples": [
+                                        {
+                                            "data": {
+                                                "id": 12,
+                                                "name": "Ahmed Gamal",
+                                                "phone": "+201001234567",
+                                                "bio": "Experienced plumbing technician specializing in residential maintenance.",
+                                                "avatar": "top-people/ahmed-gamal.jpg",
+                                                "avatar_url": "https://haader.fra1.cdn.digitaloceanspaces.com/toplist/top-people/ahmed-gamal.jpg",
+                                                "category_id": 1,
+                                                "is_approved": true,
+                                                "category": {
+                                                    "id": 1,
+                                                    "name": "Plumbing",
+                                                    "name_ar": "\u0633\u0628\u0627\u0643\u0629",
+                                                    "created_at": "2026-03-13T00:00:00.000000Z",
+                                                    "updated_at": "2026-03-13T00:00:00.000000Z"
+                                                },
+                                                "created_at": "2026-03-16T00:00:00.000000Z",
+                                                "updated_at": "2026-03-16T00:00:00.000000Z"
+                                            }
+                                        }
+                                    ],
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TopPersonResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/top-people": {
+            "get": {
+                "operationId": "admin.top-people.index",
+                "summary": "List all top people for admin management",
+                "tags": [
+                    "Admin Top People"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `TopPersonResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TopPersonResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "operationId": "admin.top-people.store",
+                "summary": "Create a new top person",
+                "tags": [
+                    "Admin Top People"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreTopPersonRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "`TopPersonResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TopPersonResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/top-people/{topPerson}": {
+            "get": {
+                "operationId": "admin.top-people.show",
+                "summary": "Show a single top person",
+                "tags": [
+                    "Admin Top People"
+                ],
+                "parameters": [
+                    {
+                        "name": "topPerson",
+                        "in": "path",
+                        "required": true,
+                        "description": "The top person ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`TopPersonResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TopPersonResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "operationId": "admin.top-people.update",
+                "summary": "Update an existing top person",
+                "tags": [
+                    "Admin Top People"
+                ],
+                "parameters": [
+                    {
+                        "name": "topPerson",
+                        "in": "path",
+                        "required": true,
+                        "description": "The top person ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateTopPersonRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`TopPersonResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TopPersonResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "operationId": "admin.top-people.destroy",
+                "description": "Deletes a top person by ID. This can be used to reject pending submissions or remove existing entries.",
+                "summary": "Delete top person",
+                "tags": [
+                    "Admin Top People"
+                ],
+                "parameters": [
+                    {
+                        "name": "topPerson",
+                        "in": "path",
+                        "required": true,
+                        "description": "The top person ID.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 12
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Top person deleted successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
@@ -265,6 +685,7 @@
                                                     "id": 1,
                                                     "name": "E. A. Gamal",
                                                     "email": "e.a.gamal@gmail.com",
+                                                    "is_admin": true,
                                                     "email_verified_at": "2026-03-13T00:00:00.000000Z",
                                                     "created_at": "2026-03-13T00:00:00.000000Z",
                                                     "updated_at": "2026-03-13T00:00:00.000000Z"
@@ -273,6 +694,7 @@
                                                     "id": 2,
                                                     "name": "Admin Assistant",
                                                     "email": "assistant@example.com",
+                                                    "is_admin": false,
                                                     "email_verified_at": null,
                                                     "created_at": "2026-03-14T00:00:00.000000Z",
                                                     "updated_at": "2026-03-14T00:00:00.000000Z"
@@ -294,6 +716,9 @@
                                 }
                             }
                         }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -341,6 +766,11 @@
                                                 "description": "Plain-text password for the new user. It will be hashed before storage.",
                                                 "example": "password123",
                                                 "minLength": 8
+                                            },
+                                            "is_admin": {
+                                                "type": "boolean",
+                                                "description": "Whether the user can access admin API endpoints.",
+                                                "example": true
                                             }
                                         },
                                         "required": [
@@ -367,6 +797,7 @@
                                                 "id": 3,
                                                 "name": "New Admin User",
                                                 "email": "new-admin@example.com",
+                                                "is_admin": true,
                                                 "email_verified_at": null,
                                                 "created_at": "2026-03-16T00:00:00.000000Z",
                                                 "updated_at": "2026-03-16T00:00:00.000000Z"
@@ -384,6 +815,9 @@
                                 }
                             }
                         }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -432,6 +866,7 @@
                                                 "id": 1,
                                                 "name": "E. A. Gamal",
                                                 "email": "e.a.gamal@gmail.com",
+                                                "is_admin": true,
                                                 "email_verified_at": "2026-03-13T00:00:00.000000Z",
                                                 "created_at": "2026-03-13T00:00:00.000000Z",
                                                 "updated_at": "2026-03-13T00:00:00.000000Z"
@@ -449,6 +884,9 @@
                                 }
                             }
                         }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -508,6 +946,11 @@
                                                 "description": "Updated plain-text password. It will be hashed before storage.",
                                                 "example": "new-password123",
                                                 "minLength": 8
+                                            },
+                                            "is_admin": {
+                                                "type": "boolean",
+                                                "description": "Whether the user can access admin API endpoints.",
+                                                "example": false
                                             }
                                         }
                                     }
@@ -529,6 +972,7 @@
                                                 "id": 1,
                                                 "name": "Updated Admin User",
                                                 "email": "updated-admin@example.com",
+                                                "is_admin": false,
                                                 "email_verified_at": "2026-03-13T00:00:00.000000Z",
                                                 "created_at": "2026-03-13T00:00:00.000000Z",
                                                 "updated_at": "2026-03-16T00:00:00.000000Z"
@@ -546,6 +990,9 @@
                                 }
                             }
                         }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -589,6 +1036,9 @@
                                 }
                             }
                         }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -933,6 +1383,9 @@
                             }
                         }
                     },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
@@ -977,6 +1430,9 @@
                                 }
                             }
                         }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -1031,6 +1487,9 @@
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -1090,6 +1549,9 @@
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
                     },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     },
@@ -1127,330 +1589,8 @@
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctumBearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/admin/top-people/pending": {
-            "get": {
-                "operationId": "admin.top-people.pending",
-                "summary": "List only pending top people for admin approval",
-                "tags": [
-                    "TopPerson"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Array of `TopPersonResource`",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/TopPersonResource"
-                                            }
-                                        }
-                                    },
-                                    "required": [
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctumBearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/admin/top-people/{topPerson}/approve": {
-            "patch": {
-                "operationId": "admin.top-people.approve",
-                "summary": "Approve a pending top person",
-                "tags": [
-                    "TopPerson"
-                ],
-                "parameters": [
-                    {
-                        "name": "topPerson",
-                        "in": "path",
-                        "required": true,
-                        "description": "The top person ID",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "`TopPersonResource`",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TopPersonResource"
-                                        }
-                                    },
-                                    "required": [
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctumBearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/admin/top-people": {
-            "get": {
-                "operationId": "admin.top-people.index",
-                "summary": "List all top people for admin management",
-                "tags": [
-                    "TopPerson"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Array of `TopPersonResource`",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/TopPersonResource"
-                                            }
-                                        }
-                                    },
-                                    "required": [
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctumBearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "operationId": "admin.top-people.store",
-                "summary": "Create a new top person",
-                "tags": [
-                    "TopPerson"
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "$ref": "#/components/schemas/StoreTopPersonRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "`TopPersonResource`",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TopPersonResource"
-                                        }
-                                    },
-                                    "required": [
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctumBearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/admin/top-people/{topPerson}": {
-            "get": {
-                "operationId": "admin.top-people.show",
-                "summary": "Show a single top person",
-                "tags": [
-                    "TopPerson"
-                ],
-                "parameters": [
-                    {
-                        "name": "topPerson",
-                        "in": "path",
-                        "required": true,
-                        "description": "The top person ID",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "`TopPersonResource`",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TopPersonResource"
-                                        }
-                                    },
-                                    "required": [
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctumBearerAuth": []
-                    }
-                ]
-            },
-            "put": {
-                "operationId": "admin.top-people.update",
-                "summary": "Update an existing top person",
-                "tags": [
-                    "TopPerson"
-                ],
-                "parameters": [
-                    {
-                        "name": "topPerson",
-                        "in": "path",
-                        "required": true,
-                        "description": "The top person ID",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpdateTopPersonRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "`TopPersonResource`",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/components/schemas/TopPersonResource"
-                                        }
-                                    },
-                                    "required": [
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctumBearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "operationId": "admin.top-people.destroy",
-                "summary": "Delete a top person",
-                "tags": [
-                    "TopPerson"
-                ],
-                "parameters": [
-                    {
-                        "name": "topPerson",
-                        "in": "path",
-                        "required": true,
-                        "description": "The top person ID",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No content"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -1747,6 +1887,9 @@
                     "email": {
                         "type": "string"
                     },
+                    "is_admin": {
+                        "type": "boolean"
+                    },
                     "email_verified_at": {
                         "type": "string"
                     },
@@ -1761,6 +1904,7 @@
                     "id",
                     "name",
                     "email",
+                    "is_admin",
                     "email_verified_at",
                     "created_at",
                     "updated_at"
@@ -1794,6 +1938,25 @@
                             "required": [
                                 "message",
                                 "errors"
+                            ]
+                        }
+                    }
+                }
+            },
+            "AuthorizationException": {
+                "description": "Authorization error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
                             ]
                         }
                     }
