@@ -18,6 +18,10 @@
         {
             "name": "Admin Authentication",
             "description": "Authenticate with email and password to get a Sanctum Bearer token, then send that token to protected /api/admin endpoints."
+        },
+        {
+            "name": "Admin Users",
+            "description": "Manage admin-accessible users through authenticated admin API endpoints."
         }
     ],
     "paths": {
@@ -224,6 +228,364 @@
                                     "required": [
                                         "message"
                                     ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/users": {
+            "get": {
+                "operationId": "admin.users.index",
+                "description": "Returns all users available to the admin panel ordered by name and email.",
+                "summary": "List admin users",
+                "tags": [
+                    "Admin Users"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Users retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "examples": [
+                                        {
+                                            "data": [
+                                                {
+                                                    "id": 1,
+                                                    "name": "E. A. Gamal",
+                                                    "email": "e.a.gamal@gmail.com",
+                                                    "email_verified_at": "2026-03-13T00:00:00.000000Z",
+                                                    "created_at": "2026-03-13T00:00:00.000000Z",
+                                                    "updated_at": "2026-03-13T00:00:00.000000Z"
+                                                },
+                                                {
+                                                    "id": 2,
+                                                    "name": "Admin Assistant",
+                                                    "email": "assistant@example.com",
+                                                    "email_verified_at": null,
+                                                    "created_at": "2026-03-14T00:00:00.000000Z",
+                                                    "updated_at": "2026-03-14T00:00:00.000000Z"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/UserResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "operationId": "admin.users.store",
+                "description": "Creates a new user record for admin-side management.",
+                "summary": "Create admin user",
+                "tags": [
+                    "Admin Users"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/components/schemas/StoreUserRequest"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "User display name.",
+                                                "example": "New Admin User",
+                                                "maxLength": 255
+                                            },
+                                            "email": {
+                                                "type": "string",
+                                                "format": "email",
+                                                "description": "User email address. Must be unique.",
+                                                "example": "new-admin@example.com",
+                                                "maxLength": 255
+                                            },
+                                            "password": {
+                                                "type": "string",
+                                                "description": "Plain-text password for the new user. It will be hashed before storage.",
+                                                "example": "password123",
+                                                "minLength": 8
+                                            }
+                                        },
+                                        "required": [
+                                            "name",
+                                            "email",
+                                            "password"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User created successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "examples": [
+                                        {
+                                            "data": {
+                                                "id": 3,
+                                                "name": "New Admin User",
+                                                "email": "new-admin@example.com",
+                                                "email_verified_at": null,
+                                                "created_at": "2026-03-16T00:00:00.000000Z",
+                                                "updated_at": "2026-03-16T00:00:00.000000Z"
+                                            }
+                                        }
+                                    ],
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/users/{user}": {
+            "get": {
+                "operationId": "admin.users.show",
+                "description": "Returns a single user by ID for admin-side inspection.",
+                "summary": "Show admin user",
+                "tags": [
+                    "Admin Users"
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "description": "The user ID.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User retrieved successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "examples": [
+                                        {
+                                            "data": {
+                                                "id": 1,
+                                                "name": "E. A. Gamal",
+                                                "email": "e.a.gamal@gmail.com",
+                                                "email_verified_at": "2026-03-13T00:00:00.000000Z",
+                                                "created_at": "2026-03-13T00:00:00.000000Z",
+                                                "updated_at": "2026-03-13T00:00:00.000000Z"
+                                            }
+                                        }
+                                    ],
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "operationId": "admin.users.update",
+                "description": "Updates a user. You may send any subset of name, email, and password.",
+                "summary": "Update admin user",
+                "tags": [
+                    "Admin Users"
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "description": "The user ID.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/components/schemas/UpdateUserRequest"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "Updated user display name.",
+                                                "example": "Updated Admin User",
+                                                "maxLength": 255
+                                            },
+                                            "email": {
+                                                "type": "string",
+                                                "format": "email",
+                                                "description": "Updated unique email address.",
+                                                "example": "updated-admin@example.com",
+                                                "maxLength": 255
+                                            },
+                                            "password": {
+                                                "type": "string",
+                                                "description": "Updated plain-text password. It will be hashed before storage.",
+                                                "example": "new-password123",
+                                                "minLength": 8
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User updated successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "examples": [
+                                        {
+                                            "data": {
+                                                "id": 1,
+                                                "name": "Updated Admin User",
+                                                "email": "updated-admin@example.com",
+                                                "email_verified_at": "2026-03-13T00:00:00.000000Z",
+                                                "created_at": "2026-03-13T00:00:00.000000Z",
+                                                "updated_at": "2026-03-16T00:00:00.000000Z"
+                                            }
+                                        }
+                                    ],
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumBearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "operationId": "admin.users.destroy",
+                "description": "Deletes a user by ID.",
+                "summary": "Delete admin user",
+                "tags": [
+                    "Admin Users"
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "description": "The user ID.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "User deleted successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
                                 }
                             }
                         }
@@ -1242,6 +1604,10 @@
                 ],
                 "title": "StoreTopPersonRequest"
             },
+            "StoreUserRequest": {
+                "type": "object",
+                "title": "StoreUserRequest"
+            },
             "TopPersonResource": {
                 "type": "object",
                 "properties": {
@@ -1364,6 +1730,42 @@
                     }
                 },
                 "title": "UpdateTopPersonRequest"
+            },
+            "UpdateUserRequest": {
+                "type": "object",
+                "title": "UpdateUserRequest"
+            },
+            "UserResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "email_verified_at": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "email_verified_at",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "UserResource"
             }
         },
         "responses": {
